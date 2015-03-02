@@ -1,34 +1,15 @@
-<!doctype html>
+<!DOCTYPE HTML>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>hello phaser!</title>
-        <script src="phaser.min.js"></script>
-    </head>
-    <body>
-
-    <script type="text/javascript">
-
-    window.onload = function() {
-
-        var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create });
-
-        function preload () {
-
-            game.load.image('logo', 'phaser.png');
-
-        }
-
-        function create () {
-
-            var logo = game.add.sprite(game.world.centerX, game.world.centerY, 'logo');
-            logo.anchor.setTo(0.5, 0.5);
-
-        }
-
-    };
-
-    </script>
-
-    </body>
+<head>
+<meta name="description" content="Clevercat" />
+    <title>Clevercat</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1, IE=9">
+    <meta name="viewport" content="initial-scale=1 maximum-scale=1 user-scalable=0 minimal-ui" />
+    <script src="//cdn.jsdelivr.net/phaser/2.2.2/phaser.min.js"></script>
+    <script src="js/clevercat.js"></script>
+</head>
+<body>
+    <div id="game"></div>    
+</body>
 </html>
