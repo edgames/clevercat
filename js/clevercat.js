@@ -23,7 +23,7 @@ PhaserGame.prototype = {
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
-        this.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+        this.load.spritesheet('cat', 'assets/catwalk.png', 400, 200);
 
     },
 
@@ -50,17 +50,8 @@ PhaserGame.prototype = {
         //  This stops it from falling away when you jump on it
         ground.body.immovable = true;
 
-        //  Now let's create two ledges
-        var ledge = this.platforms.create(400, 400, 'ground');
-        ledge.body.immovable = true;
-
-        ledge = this.platforms.create(-150, 250, 'ground');
-        ledge.body.bounce.y = 0.2;
-        ledge.body.gravity.y = 10;
-        ledge.body.immovable = true;
-
         // The player and its settings
-        this.player = game.add.sprite(32, game.world.height - 150, 'dude');
+        this.player = game.add.sprite(32, game.world.height - 150, 'cat');
 
         //  We need to enable physics on the player
         this.physics.arcade.enable(this.player);
@@ -69,10 +60,11 @@ PhaserGame.prototype = {
         this.player.body.bounce.y = 0.05;
         this.player.body.gravity.y = 800;
         this.player.body.collideWorldBounds = true;
+        this.player.scale.setTo(0.1, 0.1);
 
         //  Our two animations, walking left and right.
-        this.player.animations.add('left', [0, 1, 2, 3], 10, true);
-        this.player.animations.add('right', [5, 6, 7, 8], 10, true);
+        this.player.animations.add('left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 5, true);
+        this.player.animations.add('right', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 5, true);
 
         //  Finally some stars to collect
         this.stars = game.add.group();
@@ -131,12 +123,17 @@ PhaserGame.prototype = {
             //  Move to the left
             this.player.body.velocity.x = -150;
             this.player.animations.play('left');
+            this.player.anchor.setTo(.5, 1); //so it flips around its middle
+            this.player.scale.x = 0.1; //facing default direction
+    
         }
         else if (this.cursors.right.isDown)
         {
             //  Move to the right
             this.player.body.velocity.x = 150;
             this.player.animations.play('right');
+            this.player.anchor.setTo(.5, 1); //so it flips around its middle
+            this.player.scale.x = -0.1; //facing opposite direction
         }
         else
         {
