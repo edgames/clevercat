@@ -5,9 +5,10 @@ var PhaserGame = function (game) {
 	this.player = null;
 	this.platforms = null;
 	this.cursors = null;
-	this.stars = null;
 	this.score = 0;
 	this.scoreText = null;
+	this.blocks = null;
+	this.storeBlocks = null;
 };
 
 PhaserGame.prototype = {
@@ -22,8 +23,10 @@ PhaserGame.prototype = {
 
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
-        this.load.image('star', 'assets/star.png');
         this.load.spritesheet('cat', 'assets/catwalk.png', 400, 200);
+        this.load.image('topbar', 'assets/Plain Block.png');
+        this.load.image('cliff', 'assets/Grass Block.png');
+        this.load.image('crate', 'assets/Wood Block.png');
 
     },
 
@@ -34,74 +37,60 @@ PhaserGame.prototype = {
 
         //  A simple background for our game
         this.add.sprite(0, 0, 'sky');
-
-        //  The platforms group contains the ground and the 2 ledges we can jump on
+        
+        //  The platforms group contains the ground and the cliff
         this.platforms = this.add.group();
-
-        //  We will enable physics for any object that is created in this group
         this.platforms.enableBody = true;
-
-        // Here we create the ground.
         var ground = this.platforms.create(0, game.world.height - 64, 'ground');
-
-        //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
-        ground.scale.setTo(2, 2);
-
-        //  This stops it from falling away when you jump on it
+        ground.scale.setTo(2, 2); //  Scale it to fit the width of the game (the original sprite is 400x32 in size)
         ground.body.immovable = true;
+        var cliff = this.platforms.create(game.world.width/2, 1*game.world.height/3, 'cliff');
+        cliff.scale.setTo(3.3, 2);
+        cliff.body.immovable = true;
 
         // The player and its settings
         this.player = game.add.sprite(32, game.world.height - 150, 'cat');
-
-        //  We need to enable physics on the player
         this.physics.arcade.enable(this.player);
-
-        //  Player physics properties. Give the little guy a slight bounce.
         this.player.body.bounce.y = 0.05;
         this.player.body.gravity.y = 800;
         this.player.body.collideWorldBounds = true;
-        this.player.scale.setTo(0.1, 0.1);
+        this.player.scale.setTo(0.1, 0.1); // The cat sprite is far too large...
+        this.player.animations.add('left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 10, true);
+        this.player.animations.add('right', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 10, true);
+  
+        // the bar at the top of the game
+        var topbar = this.add.sprite(0, -13, 'topbar');
+        topbar.scale.setTo(10, 0.3);
+        
+        this.activeBlocks = this.add.group();
+        this.storeBlocks = this.add.group();
+        var topbarBlock = this.storeBlocks.create(0, 0, 'crate');
+        topbarBlock.scale.setTo(0.3, 0.3);
+        //  Enable input and allow for dragging for the blocks sprite
+        topbarBlock.inputEnabled = true;
+        topbarBlock.input.enableDrag();
+        topbarBlock.events.onDragStart.add(this.onDragStart, this);
+        topbarBlock.events.onDragStop.add(this.onDragStop, this);
 
-        //  Our two animations, walking left and right.
-        this.player.animations.add('left', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 5, true);
-        this.player.animations.add('right', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], 5, true);
+        // Example text:
+        // this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+        
 
-        //  Finally some stars to collect
-        this.stars = game.add.group();
 
-        //  We will enable physics for any star that is created in this group
-        this.stars.enableBody = true;
-
-        //  Here we'll create 12 of them evenly spaced apart
-        for (var i = 0; i < 12; i++)
-        {
-            //  Create a star inside of the 'stars' group
-            var star = this.stars.create(i * 70, 0, 'star');
-
-            //  Let gravity do its thing
-            star.body.gravity.y = 300;
-
-            //  This just gives each star a slightly random bounce value
-            star.body.bounce.y = 0.7 + Math.random() * 0.2;
-        }
-
-        //  The score
-        this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-
-        //  Our controls.
         this.cursors = game.input.keyboard.createCursorKeys();
 
     },
-
-    collectStar: function (player, star) {
     
-        // Removes the star from the screen
-        star.kill();
-
-        //  Add and update the score
-        this.score += 10;
-        this.scoreText.text = 'Score: ' + this.score;
+    onDragStart: function(sprite, pointer) {
+        console.log("drag starting");
+        
     },
+    
+    onDragStop: function(sprite, pointer) {
+        console.log("drag stopping");
+        
+    },
+
 
     /**
      * Core update loop. Handles collision checks and player input.
@@ -109,15 +98,8 @@ PhaserGame.prototype = {
      * @method update
      */
     update: function () {
-        //  Collide the player and the stars with the platforms
+        //  Collide the player the platforms
         this.game.physics.arcade.collide(this.player, this.platforms);
-        this.game.physics.arcade.collide(this.stars, this.platforms);
-
-        //  Checks to see if the player overlaps with any of the stars, if he does call the collectStar function
-        this.game.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this);
-
-        //  Reset the players velocity (movement)
-        this.player.body.velocity.x = 0;
 
         if (this.cursors.left.isDown) {
             //  Move to the left
@@ -126,21 +108,17 @@ PhaserGame.prototype = {
             this.player.anchor.setTo(.5, 1); //so it flips around its middle
             this.player.scale.x = 0.1; //facing default direction
     
-        }
-        else if (this.cursors.right.isDown)
-        {
+        } else if (this.cursors.right.isDown) {
             //  Move to the right
             this.player.body.velocity.x = 150;
             this.player.animations.play('right');
             this.player.anchor.setTo(.5, 1); //so it flips around its middle
             this.player.scale.x = -0.1; //facing opposite direction
-        }
-        else
-        {
+        } else {
             //  Stand still
+            this.player.body.velocity.x = 0;
             this.player.animations.stop();
-
-            this.player.frame = 4;
+            this.player.frame = 0;
         }
     
         //  Allow the player to jump if they are touching the ground.
