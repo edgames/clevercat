@@ -1,3 +1,5 @@
+var Phaser;
+
 var game = new Phaser.Game(640, 480, Phaser.CANVAS, 'game');
 
 var PhaserGame = function (game) {
@@ -27,6 +29,7 @@ PhaserGame.prototype = {
         this.load.image('topbar', 'assets/Plain Block.png');
         this.load.image('cliff', 'assets/Grass Block.png');
         this.load.image('crate', 'assets/Wood Block.png');
+        this.load.image('star', 'assets/star.png')
 
     },
 
@@ -63,32 +66,40 @@ PhaserGame.prototype = {
         topbar.scale.setTo(10, 0.3);
         
         this.activeBlocks = this.add.group();
+        this.activeBlocks.enableBody = true;
         this.storeBlocks = this.add.group();
+        this.replenishStoreBlocks();
+
+        // Example text:
+        // this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
+
+        this.cursors = game.input.keyboard.createCursorKeys();
+
+    },
+    
+    replenishStoreBlocks: function() {
+        // Delete all existing store blocks and create new ones
+        this.storeBlocks.removeAll(true);
         var topbarBlock = this.storeBlocks.create(0, 0, 'crate');
         topbarBlock.scale.setTo(0.3, 0.3);
         //  Enable input and allow for dragging for the blocks sprite
         topbarBlock.inputEnabled = true;
         topbarBlock.input.enableDrag();
         topbarBlock.events.onDragStart.add(this.onDragStart, this);
-        topbarBlock.events.onDragStop.add(this.onDragStop, this);
-
-        // Example text:
-        // this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
-        
-
-
-        this.cursors = game.input.keyboard.createCursorKeys();
-
+        topbarBlock.events.onDragStop.add(this.onDragStop, this);  
     },
     
     onDragStart: function(sprite, pointer) {
-        console.log("drag starting");
-        
+        this.storeBlocks.remove(sprite);
+        this.activeBlocks.add(sprite);
+        this.replenishStoreBlocks();
     },
     
     onDragStop: function(sprite, pointer) {
-        console.log("drag stopping");
-        
+        sprite.events.onDragStart.dispose();
+        sprite.body.gravity.y = 100;
+        sprite.body.bounce.y = 0.10;
+        this.activeBlocks.add(sprite);
     },
 
 
@@ -100,6 +111,10 @@ PhaserGame.prototype = {
     update: function () {
         //  Collide the player the platforms
         this.game.physics.arcade.collide(this.player, this.platforms);
+        
+        // Collide the player and the active blocks
+        this.game.physics.arcade.collide(this.player, this.activeBlocks);
+        this.game.physics.arcade.collide(this.platforms, this.activeBlocks);
 
         if (this.cursors.left.isDown) {
             //  Move to the left
