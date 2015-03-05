@@ -1,0 +1,15 @@
+
+- Prevent dragging through existing platforms, cats, and blocks
+  * Sort of works with platforms right now, but we can't drag
+    the block away from a platform we're currently pressed against
+    
+- Prompt the user with a quiz question when attempting to place a block
+  * TechBridgeWorld API
+  
+- Add a finish line to the level
+
+- Multi-level support
+
+- Make things prettier
+
+- Make controls for touch screens

@@ -11,6 +11,10 @@ var PhaserGame = function (game) {
 	this.scoreText = null;
 	this.blocks = null;
 	this.storeBlocks = null;
+	// Refers to the sprite currently being dragged, if any
+	this.draggingSprite = null;
+	// Refers to the LAST NON-OVERLAPPING position of the dragged sprite
+	this.draggingSpritePosition = null;
 };
 
 PhaserGame.prototype = {
@@ -49,6 +53,7 @@ PhaserGame.prototype = {
         ground.body.immovable = true;
         var cliff = this.platforms.create(game.world.width/2, 1*game.world.height/3, 'cliff');
         cliff.scale.setTo(3.3, 2);
+        cliff.body.setSize(cliff.body.width, cliff.body.height-25, 0, 25);
         cliff.body.immovable = true;
 
         // The player and its settings
@@ -70,10 +75,12 @@ PhaserGame.prototype = {
         this.storeBlocks = this.add.group();
         this.replenishStoreBlocks();
 
+        this.star = this.add.sprite(game.world.width - 50, 1*game.world.height/3, 'star')
+
         // Example text:
         // this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
 
-        this.cursors = game.input.keyboard.createCursorKeys();
+        this.cursors = this.input.keyboard.createCursorKeys();
 
     },
     
@@ -81,7 +88,7 @@ PhaserGame.prototype = {
         // Delete all existing store blocks and create new ones
         this.storeBlocks.removeAll(true);
         var topbarBlock = this.storeBlocks.create(0, 0, 'crate');
-        topbarBlock.scale.setTo(0.3, 0.3);
+        topbarBlock.scale.setTo(0.5, 0.5);
         //  Enable input and allow for dragging for the blocks sprite
         topbarBlock.inputEnabled = true;
         topbarBlock.input.enableDrag();
@@ -92,13 +99,19 @@ PhaserGame.prototype = {
     onDragStart: function(sprite, pointer) {
         this.storeBlocks.remove(sprite);
         this.activeBlocks.add(sprite);
-        this.replenishStoreBlocks();
+        this.draggingSprite = sprite;
+        this.draggingSpritePosition = sprite.position.clone();
+        var game = this;
+        setTimeout(function() {
+            game.replenishStoreBlocks();
+        }, 100);
     },
     
     onDragStop: function(sprite, pointer) {
-        sprite.events.onDragStart.dispose();
+        sprite.input.disableDrag();
         sprite.body.gravity.y = 100;
         sprite.body.bounce.y = 0.10;
+        this.draggingSprite = null;
         this.activeBlocks.add(sprite);
     },
 
@@ -109,12 +122,20 @@ PhaserGame.prototype = {
      * @method update
      */
     update: function () {
-        //  Collide the player the platforms
+        //  Handle collisions
         this.game.physics.arcade.collide(this.player, this.platforms);
-        
-        // Collide the player and the active blocks
         this.game.physics.arcade.collide(this.player, this.activeBlocks);
         this.game.physics.arcade.collide(this.platforms, this.activeBlocks);
+        this.game.physics.arcade.collide(this.activeBlocks, this.activeBlocks);
+        
+        // Handle overlaps of sprites
+        if (this.draggingSprite !== null) {
+            if (this.game.physics.arcade.overlap(this.draggingSprite, this.platforms)) {
+                // If overlapping, reset to the last non-overlapping position
+                this.draggingSprite.position = this.draggingSpritePosition;   
+            }
+            this.draggingSpritePosition = this.draggingSprite.position.clone();
+        }
 
         if (this.cursors.left.isDown) {
             //  Move to the left
