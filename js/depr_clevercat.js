@@ -23,10 +23,6 @@ var PhaserGame = function (game) {
 	
 };
 
-function initTimer(game) {
-    "blah";
-}
-
 PhaserGame.prototype = {
 
     init: function () {
@@ -39,7 +35,7 @@ PhaserGame.prototype = {
 
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
-        this.load.spritesheet('cat', 'assets/catwalk.png', 400, 200);
+        Cat.preload(this);
         this.load.image('topbar', 'assets/Plain Block.png');
         this.load.image('cliff', 'assets/Grass Block.png');
         this.load.image('crate', 'assets/Wood Block.png');
