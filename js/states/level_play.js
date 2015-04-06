@@ -54,20 +54,15 @@ CleverCat.LevelPlay.prototype = {
     
     this.blockManager = new BlockManager(this);
     
-    this.stars = this.add.group();
-    this.stars.enableBody = true;
-    var star = this.stars.create(this.game.world.width - 50, 1*this.game.world.height/3, 'star');
-    star.body.gravity.y = 100;
-    star.body.bounce.y = 0.05;
-    star.body.collideWorldBounds = true; //in an attempt to save the star!
+    this.milk = new Milk(this);
     //this.star = this.add.sprite(game.world.width - 50, 1*game.world.height/3, 'star');
   
     // Example text:
     // this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
     
     this.timer = this.game.time.create();
-    this.startTimer = this.timer.add(Phaser.Timer.MINUTE * 2 + Phaser.Timer.SECOND * 30, this.endTimer, this);
-    this.timer.start();
+    // this.startTimer = this.timer.add(this.Phaser.Timer.MINUTE * 2 + this.Phaser.Timer.SECOND * 30, this.endTimer, this);
+    // this.timer.start();
     
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -121,11 +116,7 @@ CleverCat.LevelPlay.prototype = {
         return true;
     }
   },
-    
-  /* Get the star */
-  collectStar: function (player,star) {
-      star.kill();
-  },
+
   /**
   endTimer : function() {
       this.timer.stop();  
@@ -142,9 +133,9 @@ CleverCat.LevelPlay.prototype = {
     this.game.physics.arcade.collide(this.cat.sprite, this.blockManager.activeBlocks);
     this.game.physics.arcade.collide(this.platforms, this.blockManager.activeBlocks);
     this.game.physics.arcade.collide(this.blockManager.activeBlocks, this.blockManager.activeBlocks);
-    this.game.physics.arcade.collide(this.stars, this.platforms);
-    this.game.physics.arcade.collide(this.stars, this.blockManager.activeBlocks);
-    this.game.physics.arcade.overlap(this.cat.sprite, this.stars, this.collectStar, null, this);
+    this.game.physics.arcade.collide(this.milk, this.platforms);
+    this.game.physics.arcade.collide(this.milk, this.blockManager.activeBlocks);
+    this.game.physics.arcade.overlap(this.cat.sprite, this.milk, this.milk.drinkMilk, null);
     this.game.physics.arcade.collide(this.draggingBlocks, this.blockManager.activeBlocks);
     
     // Handle overlaps of sprites
@@ -155,6 +146,7 @@ CleverCat.LevelPlay.prototype = {
             this.hideDraggingShadow();
         }
     }
+
 
     this.cat.handleArrowKeys(this.cursors);
   }

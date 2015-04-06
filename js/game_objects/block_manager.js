@@ -34,11 +34,7 @@ BlockManager.prototype = {
         this.storeBlocks.remove(sprite);
         this.draggingBlocks.add(sprite);
         this.draggingSprite = sprite;
-        this.dragOffset = Phaser.Point.subtract(pointer.position, sprite.position);
         var manager = this;
-        setTimeout(function() {
-            manager.replenishStoreBlocks();
-        }, 100);
     },
   
     onDragStop: function(sprite, pointer) {
@@ -47,18 +43,20 @@ BlockManager.prototype = {
         this.considerPlacingBlock(this.draggingSprite);
         this.draggingSprite = null;
         this.draggingBlocks.remove(sprite);
+        this.replenishStoreBlocks();
     },
     
     /* If the block has a valid placement, prompt the user with a question.
      * Otherwise, inform the user the placement is invalid.
      */
     considerPlacingBlock: function(block) {
+        var manager = this;
         if (this.isValidPlacement(block)) {
             this.promptForQuestion(function() {
-                this.addActiveBlock(block);   
+                manager.addActiveBlock(block);   
             });
         } else {
-            // TODO
+            // anything
         }
     },
     
@@ -88,6 +86,6 @@ BlockManager.prototype = {
         var overlapsWithPlatforms = this.game.physics.arcade.overlap(block, this.game.platforms);
         var overlapsWithActive = this.game.physics.arcade.overlap(block, this.activeBlocks);
         var overlapsWithPlayer = this.game.physics.arcade.overlap(block, this.game.cat.sprite);
-        return (overlapsWithPlatforms || overlapsWithActive || overlapsWithPlayer);
+        return !(overlapsWithPlatforms || overlapsWithActive || overlapsWithPlayer);
     }
 }

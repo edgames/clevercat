@@ -9,7 +9,7 @@ CleverCat.Boot.prototype = {
   },
 
   create: function() {
-    this.game.stage.backgroundColor = "#3f3";
+    this.game.stage.backgroundColor = "#eee";
     this.state.start('Preload');
   }
 };

@@ -12,14 +12,16 @@ CleverCat.Preload.prototype = {
     this.load.image('sky', 'assets/sky.png');
     this.load.image('ground', 'assets/platform.png');
     Cat.preload(this);
+    Milk.preload(this);
     this.load.image('topbar', 'assets/Plain Block.png');
     this.load.image('cliff', 'assets/Grass Block.png');
     this.load.image('crate', 'assets/Wood Block.png');
     this.load.image('star', 'assets/star.png');
+    this.load.image('playbutton', 'assets/play_button.png')
   },
 
   create: function() {
-    this.state.start('MainMenu');
+    this.state.start('Login');
   }
 
 };
