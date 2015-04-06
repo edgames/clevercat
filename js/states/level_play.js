@@ -55,14 +55,13 @@ CleverCat.LevelPlay.prototype = {
     this.blockManager = new BlockManager(this);
     
     this.milk = new Milk(this);
-    //this.star = this.add.sprite(game.world.width - 50, 1*game.world.height/3, 'star');
-  
-    // Example text:
-    // this.scoreText = game.add.text(16, 16, 'score: 0', { fontSize: '32px', fill: '#000' });
     
-    this.timer = this.game.time.create();
-    // this.startTimer = this.timer.add(this.Phaser.Timer.MINUTE * 2 + this.Phaser.Timer.SECOND * 30, this.endTimer, this);
-    // this.timer.start();
+    // Timer
+    this.startTimer = this.add.text(550,05,'01:30',{font: '400 30px Open Sans', fill: '#000', align: 'right'});
+    this.timer = this.time.create(false);
+    this.countdownTimer = this.timer.add(Phaser.Timer.MINUTE * 0 + Phaser.Timer.SECOND * 30, this.endTimer, this);
+    this.timer.start();
+    this.levelOver = false;
     
     this.cursors = this.input.keyboard.createCursorKeys();
 
@@ -72,7 +71,7 @@ CleverCat.LevelPlay.prototype = {
    * active blocks, or the player
    */
   overlapsWithActiveObjects: function(group) {
-
+    //what is this function supposed to be doing?
   },
 
   spritesOverlap: function(sprite1, sprite2) {
@@ -117,25 +116,63 @@ CleverCat.LevelPlay.prototype = {
     }
   },
 
-  /**
-  endTimer : function() {
-      this.timer.stop();  
-  },
-  */
+  /*  Countdown Timer */
+    render : function () {
+        if (this.timer.running){
+            this.game.world.remove(this.startTimer);
+            this.startTimer = this.game.add.text(550,05,this.formatTime(Math.round((this.countdownTimer.delay - this.timer.ms) / 1000)), 
+                               { font: '400 30px Open Sans', fill: '#000', align: 'right' } );
+        } else {
+            this.game.world.remove(this.startTimer);
+            if(!this.levelOver){
+                this.game.add.text(220,200,"Game Over!",{font: '400 40px Open Sans', fill: '#000', align: 'middle'});
+                //disable further movement
+                this.cat.sprite.kill();
+            }
+        }
+    },
+    
+   drinkMilk: function (player,sprite) {
+      sprite.kill();
+      player.kill();
+      this.timer.stop();
+      this.world.remove(this.startTimer);
+      this.add.text(190,200,"Congratulations!",{font: '400 40px Open Sans', fill: '#000', align: 'middle'});
+      //Setting the indicator of whether player gets the milk to true
+      this.levelOver = true;
+      var restartText = this.add.text(500, 350, 'Restart', { font: "400 30px Open Sans", fill: "#ff0044", align: "center" });
+      restartText.events.onInputDown.add(this.restartTextOnClick, this);
+      
+    },
+    
+    restartTextOnClick : function() {
+        this.state.start('LevelIntro');
+    },
+    
+    endTimer : function() {
+        this.timer.stop();
+    },
+    
+    formatTime: function(s) {
+        var minutes = "0" + Math.floor(s / 60);
+        var seconds = "0" + (s - minutes * 60);
+        return minutes.substr(-2) + ":" + seconds.substr(-2);   
+    },
+    
   /**
    * Core update loop. Handles collision checks and player input.
    *
    * @method update
    */
   update: function () {
-    //  Handle collisions
+   
     this.game.physics.arcade.collide(this.cat.sprite, this.platforms);
     this.game.physics.arcade.collide(this.cat.sprite, this.blockManager.activeBlocks);
     this.game.physics.arcade.collide(this.platforms, this.blockManager.activeBlocks);
     this.game.physics.arcade.collide(this.blockManager.activeBlocks, this.blockManager.activeBlocks);
-    this.game.physics.arcade.collide(this.milk, this.platforms);
-    this.game.physics.arcade.collide(this.milk, this.blockManager.activeBlocks);
-    this.game.physics.arcade.overlap(this.cat.sprite, this.milk, this.milk.drinkMilk, null);
+    this.game.physics.arcade.collide(this.milk.sprite, this.platforms);
+    this.game.physics.arcade.collide(this.milk.sprite, this.blockManager.activeBlocks);
+    this.game.physics.arcade.overlap(this.cat.sprite, this.milk.sprite, this.drinkMilk, null, this);
     this.game.physics.arcade.collide(this.draggingBlocks, this.blockManager.activeBlocks);
     
     // Handle overlaps of sprites
@@ -146,8 +183,6 @@ CleverCat.LevelPlay.prototype = {
             this.hideDraggingShadow();
         }
     }
-
-
     this.cat.handleArrowKeys(this.cursors);
   }
 };

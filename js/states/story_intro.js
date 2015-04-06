@@ -27,8 +27,5 @@ CleverCat.StoryIntro.prototype = {
   
   startTutorial: function() {
     this.state.start('Tutorial');
-  },
-
-  
-  
+  }
 };
